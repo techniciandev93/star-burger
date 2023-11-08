@@ -75,6 +75,5 @@ def register_order(request):
     participants = [OrderItem(order=instance_order, **fields) for fields in order_item_fields]
     OrderItem.objects.bulk_create(participants)
 
-    return Response({
-        'application_id': instance_order.id,
-    })
+    serializer_order = OrderSerializer(instance_order)
+    return Response(serializer_order.data)
