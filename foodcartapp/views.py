@@ -1,6 +1,8 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
+from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from .models import Product, Order, OrderItem
 
@@ -60,6 +62,38 @@ def product_list_api(request):
 @api_view(['POST'])
 def register_order(request):
     order = request.data
+
+    required_fields = ('address', 'phonenumber', 'lastname', 'firstname', 'products')
+    checking_fields = [field for field in required_fields if field not in order]
+    if checking_fields:
+        content = {'error': f'Не переданы поля {checking_fields}'}
+        return Response(content, status=status.HTTP_200_OK)
+
+    if not isinstance(order['address'], str):
+        content = {'error': 'Поле address должно быть строкой'}
+        return Response(content, status=status.HTTP_200_OK)
+
+    if not isinstance(order['phonenumber'], str):
+        content = {'error': 'Поле phonenumber должно быть строкой'}
+        return Response(content, status=status.HTTP_200_OK)
+
+    if not isinstance(order['lastname'], str):
+        content = {'error': 'Поле lastname должно быть строкой'}
+        return Response(content, status=status.HTTP_200_OK)
+
+    if not isinstance(order['firstname'], str):
+        content = {'error': 'Поле firstname должно быть строкой'}
+        return Response(content, status=status.HTTP_200_OK)
+
+    if not isinstance(order['products'], list):
+        content = {'error': 'В products должен быть список'}
+        return Response(content, status=status.HTTP_200_OK)
+
+    if not order['products']:
+        content = {'error': 'Список products не может быть пустым'}
+        return Response(content, status=status.HTTP_200_OK)
+
+
     instance_order = Order.objects.create(
         firstname=order['firstname'],
         lastname=order['lastname'],
