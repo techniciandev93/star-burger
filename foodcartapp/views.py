@@ -1,11 +1,10 @@
-import phonenumbers
 from django.http import JsonResponse
 from django.templatetags.static import static
-from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .models import Product, Order, OrderItem
+from .serializer import OrderSerializer
 
 
 def banners_list_api(request):
@@ -62,77 +61,20 @@ def product_list_api(request):
 
 @api_view(['POST'])
 def register_order(request):
-    order = request.data
-
-    required_fields = ('address', 'phonenumber', 'lastname', 'firstname', 'products')
-    checking_fields = [field for field in required_fields if field not in order]
-    if checking_fields:
-        content = {'error': f'Не переданы поля {checking_fields}'}
-        return Response(content, status=status.HTTP_200_OK)
-
-    if not isinstance(order['address'], str) or order['address'] == '':
-        content = {'error': 'Поле address должно быть не пустой строкой'}
-        return Response(content, status=status.HTTP_200_OK)
-
-    if not isinstance(order['phonenumber'], str) or order['phonenumber'] == '':
-        content = {'error': 'Поле phonenumber должно быть не пустой строкой'}
-        return Response(content, status=status.HTTP_200_OK)
-
-    phone_number = phonenumbers.parse(order['phonenumber'], "RU")
-    if not phonenumbers.is_valid_number(phone_number):
-        content = {'error': 'В поле phonenumber не валидный номер телефона'}
-        return Response(content, status=status.HTTP_200_OK)
-
-    if not isinstance(order['lastname'], str) or order['lastname'] == '':
-        content = {'error': 'Поле lastname должно быть не пустой строкой'}
-        return Response(content, status=status.HTTP_200_OK)
-
-    if not isinstance(order['firstname'], str) or order['firstname'] == '':
-        content = {'error': 'Поле firstname должно быть не пустой строкой'}
-        return Response(content, status=status.HTTP_200_OK)
-
-    if not isinstance(order['products'], list) or order['products'] == '':
-        content = {'error': 'В products должен быть список'}
-        return Response(content, status=status.HTTP_200_OK)
-
-    if not order['products']:
-        content = {'error': 'Список products не может быть пустым'}
-        return Response(content, status=status.HTTP_200_OK)
-
-    check_products = []
-    for product in order['products']:
-        if not isinstance(product['product'], int):
-            check_products.append(product['product'])
-        if not isinstance(product['quantity'], int):
-            check_products.append(product['quantity'])
-    if check_products:
-        content = {'error': f'Поля должны быть целыми числами {check_products}'}
-        return Response(content, status=status.HTTP_200_OK)
-
-    products_ids = [product['product'] for product in order['products']]
-    instance_products = {obj.id: obj for obj in Product.objects.filter(id__in=products_ids)}
-    if not instance_products:
-        content = {'error': f'Не найдены записи в бд с id {products_ids}'}
-        return Response(content, status=status.HTTP_200_OK)
-    if len(instance_products) != len(products_ids):
-        not_in_id = [i for i in instance_products if i not in products_ids]
-        content = {'error': f'Не найдены записи в бд с id {not_in_id}'}
-        return Response(content, status=status.HTTP_200_OK)
+    serializer = OrderSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
 
     instance_order = Order.objects.create(
-        firstname=order['firstname'],
-        lastname=order['lastname'],
-        phone_number=order['phonenumber'],
-        address=order['address']
+        firstname=serializer.validated_data['firstname'],
+        lastname=serializer.validated_data['lastname'],
+        phonenumber=serializer.validated_data['phonenumber'],
+        address=serializer.validated_data['address']
     )
 
-    for product in order['products']:
-        OrderItem.objects.create(
-            product=instance_products[product['product']],
-            order=instance_order,
-            count=product['quantity']
-        )
-    return JsonResponse({'Create': True}, safe=False, json_dumps_params={
-        'ensure_ascii': False,
-        'indent': 4,
+    order_item_fields = serializer.validated_data['products']
+    participants = [OrderItem(order=instance_order, **fields) for fields in order_item_fields]
+    OrderItem.objects.bulk_create(participants)
+
+    return Response({
+        'application_id': instance_order.id,
     })

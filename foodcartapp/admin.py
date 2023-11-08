@@ -107,14 +107,14 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 class OrderItemInline(admin.TabularInline):
-    fields = ('product', 'count')
+    fields = ('product', 'quantity')
     model = OrderItem
     extra = 0
 
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    fields = ('address', 'firstname', 'lastname', 'phone_number')
+    fields = ('address', 'firstname', 'lastname', 'phonenumber')
     inlines = [
         OrderItemInline,
     ]
