@@ -132,10 +132,18 @@ class RestaurantMenuItem(models.Model):
 
 
 class Order(models.Model):
+    ORDER_STATUSES = (
+        ('UN', 'Необработанный'),
+        ('AD', 'Принят'),
+        ('RE', 'Готовят'),
+        ('TC', 'Передан курьеру'),
+        ('CO', 'Завершён')
+    )
     firstname = models.CharField(verbose_name='Имя', max_length=200)
     lastname = models.CharField(verbose_name='Фамилия', max_length=200)
     phonenumber = PhoneNumberField(verbose_name='Мобильный номер')
     address = models.CharField(verbose_name='Адрес', max_length=200)
+    status = models.CharField(verbose_name='Статус', max_length=2, choices=ORDER_STATUSES, default='UN', db_index=True)
     objects = OrderQuerySet.as_manager()
 
     class Meta:
