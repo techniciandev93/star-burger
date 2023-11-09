@@ -140,11 +140,16 @@ class Order(models.Model):
         ('TC', 'Передан курьеру'),
         ('CO', 'Завершён')
     )
+    PAYMENT = (
+        ('CA', 'Наличными'),
+        ('EL', 'Электронно')
+    )
     firstname = models.CharField(verbose_name='Имя', max_length=200)
     lastname = models.CharField(verbose_name='Фамилия', max_length=200)
     phonenumber = PhoneNumberField(verbose_name='Мобильный номер')
     address = models.CharField(verbose_name='Адрес', max_length=200)
     status = models.CharField(verbose_name='Статус', max_length=2, choices=ORDER_STATUSES, default='UN', db_index=True)
+    payment_method = models.CharField(verbose_name='Способ оплаты', max_length=2, choices=PAYMENT, default='EL', db_index=True)
     comment = models.TextField(verbose_name='Комментарий', blank=True, default='')
     registration_date = models.DateTimeField(verbose_name='Дата создания заказа', default=timezone.now, db_index=True)
     call_date = models.DateTimeField(verbose_name='Дата звонка', blank=True, null=True, db_index=True)
