@@ -151,7 +151,7 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE,  verbose_name='Заказ', related_name='order_items')
     quantity = models.IntegerField(verbose_name='Количество', validators=[MinValueValidator(1)])
     price = models.DecimalField(verbose_name='цена', max_digits=8, decimal_places=2, validators=[MinValueValidator(0)],
-                                blank=True)
+                                default=0)
 
     class Meta:
         verbose_name = 'Элемент заказа'
