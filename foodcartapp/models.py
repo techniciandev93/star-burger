@@ -6,7 +6,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 class OrderQuerySet(models.QuerySet):
     def calculate_order_amount(self):
-        orders = self.annotate(order_cost=Sum(F('order_items__quantity') * F('order_items__product__price')))
+        orders = self.annotate(order_cost=Sum(F('order_items__quantity') * F('order_items__price')))
         return orders
 
 
@@ -150,6 +150,8 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE,  verbose_name='Товар', related_name='order_items')
     order = models.ForeignKey(Order, on_delete=models.CASCADE,  verbose_name='Заказ', related_name='order_items')
     quantity = models.IntegerField(verbose_name='Количество', validators=[MinValueValidator(1)])
+    price = models.DecimalField(verbose_name='цена', max_digits=8, decimal_places=2, validators=[MinValueValidator(0)],
+                                blank=True)
 
     class Meta:
         verbose_name = 'Элемент заказа'
