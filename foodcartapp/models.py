@@ -1,6 +1,9 @@
+from functools import reduce
+from operator import and_
+
 from django.db import models
 from django.core.validators import MinValueValidator
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Count
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -9,6 +12,21 @@ class OrderQuerySet(models.QuerySet):
     def calculate_order_amount(self):
         orders = self.annotate(order_cost=Sum(F('order_items__quantity') * F('order_items__price')))
         return orders
+
+    def can_cook_restaurants(self):
+        for order in self:
+            order_items = order.order_items.all()
+            order_products = [item.product for item in order_items]
+
+            common_restaurants = set(
+                Restaurant.objects.filter(menu_items__product=order_products[0], menu_items__availability=True))
+
+            for product in order_products[1:]:
+                common_restaurants = common_restaurants.intersection(
+                    set(Restaurant.objects.filter(menu_items__product=product, menu_items__availability=True))
+                )
+            order.restaurants = common_restaurants
+        return self
 
 
 class Restaurant(models.Model):
@@ -149,11 +167,14 @@ class Order(models.Model):
     phonenumber = PhoneNumberField(verbose_name='Мобильный номер')
     address = models.CharField(verbose_name='Адрес', max_length=200)
     status = models.CharField(verbose_name='Статус', max_length=2, choices=ORDER_STATUSES, default='UN', db_index=True)
-    payment_method = models.CharField(verbose_name='Способ оплаты', max_length=2, choices=PAYMENT, default='EL', db_index=True)
+    payment_method = models.CharField(verbose_name='Способ оплаты', max_length=2, choices=PAYMENT, default='EL',
+                                      db_index=True)
     comment = models.TextField(verbose_name='Комментарий', blank=True, default='')
     registration_date = models.DateTimeField(verbose_name='Дата создания заказа', default=timezone.now, db_index=True)
     call_date = models.DateTimeField(verbose_name='Дата звонка', blank=True, null=True, db_index=True)
     delivery_date = models.DateTimeField(verbose_name='Дата доставки', blank=True, null=True, db_index=True)
+    restaurant = models.ForeignKey(Restaurant, related_name='orders', verbose_name="Ресторан",
+                                   on_delete=models.CASCADE, null=True, blank=True)
     objects = OrderQuerySet.as_manager()
 
     class Meta:
@@ -168,7 +189,7 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE,  verbose_name='Товар', related_name='order_items')
     order = models.ForeignKey(Order, on_delete=models.CASCADE,  verbose_name='Заказ', related_name='order_items')
     quantity = models.IntegerField(verbose_name='Количество', validators=[MinValueValidator(1)])
-    price = models.DecimalField(verbose_name='цена', max_digits=8, decimal_places=2, validators=[MinValueValidator(0)],
+    price = models.DecimalField(verbose_name='Цена', max_digits=8, decimal_places=2, validators=[MinValueValidator(0)],
                                 default=0)
 
     class Meta:
