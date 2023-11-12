@@ -9,8 +9,6 @@ from django.contrib.auth import views as auth_views
 
 from foodcartapp.models import Product, Restaurant, Order
 
-from collections import defaultdict
-
 
 class Login(forms.Form):
     username = forms.CharField(
@@ -93,5 +91,7 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    orders = Order.objects.prefetch_related('order_items').all().calculate_order_amount().can_cook_restaurants()
+    orders = Order.objects.prefetch_related('order_items__product__menu_items__restaurant').\
+        calculate_order_amount().\
+        can_cook_restaurants()
     return render(request, template_name='order_items.html', context={'order_items': orders})

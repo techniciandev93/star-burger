@@ -131,6 +131,11 @@ class OrderAdmin(admin.ModelAdmin):
             instance.save()
         formset.save_m2m()
 
+    def save_model(self, request, obj, form, change):
+        if obj.restaurant:
+            obj.status = 'RE'
+        super().save_model(request, obj, form, change)
+
     def response_post_save_change(self, request, obj):
         response = super().response_post_save_change(request, obj)
         if url_has_allowed_host_and_scheme(request.GET.get('next'), ALLOWED_HOSTS):

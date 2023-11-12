@@ -1,9 +1,6 @@
-from functools import reduce
-from operator import and_
-
 from django.db import models
 from django.core.validators import MinValueValidator
-from django.db.models import Sum, F, Count
+from django.db.models import Sum, F
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -17,15 +14,11 @@ class OrderQuerySet(models.QuerySet):
         for order in self:
             order_items = order.order_items.all()
             order_products = [item.product for item in order_items]
-
-            common_restaurants = set(
-                Restaurant.objects.filter(menu_items__product=order_products[0], menu_items__availability=True))
-
-            for product in order_products[1:]:
-                common_restaurants = common_restaurants.intersection(
-                    set(Restaurant.objects.filter(menu_items__product=product, menu_items__availability=True))
-                )
-            order.restaurants = common_restaurants
+            for order_product in order_products:
+                order_product.restaurants = Restaurant.objects.filter(menu_items__product=order_product,
+                                                                      menu_items__availability=True)
+            restaurants = [product.restaurants for product in order_products]
+            order.restaurants = set(restaurants[0]).intersection(*restaurants[1:])
         return self
 
 
