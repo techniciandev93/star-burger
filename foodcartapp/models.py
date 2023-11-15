@@ -1,8 +1,13 @@
+from collections import defaultdict
+
+import requests
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.db.models import Sum, F
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
+
+from restaurateur.service import calculate_distance
 
 
 class OrderQuerySet(models.QuerySet):
@@ -11,14 +16,32 @@ class OrderQuerySet(models.QuerySet):
         return orders
 
     def can_cook_restaurants(self):
+        order_products = Product.objects.filter(order_items__order__in=self)
+
+        product_restaurants = defaultdict(list)
+        restaurant_menu_items = RestaurantMenuItem.objects.select_related('product', 'restaurant').filter(
+            product__in=order_products, availability=True
+        )
+
+        for restaurant_menu_item in restaurant_menu_items:
+            product_restaurants[restaurant_menu_item.product].append(restaurant_menu_item.restaurant)
+
         for order in self:
             order_items = order.order_items.all()
             order_products = [item.product for item in order_items]
-            for order_product in order_products:
-                order_product.restaurants = Restaurant.objects.filter(menu_items__product=order_product,
-                                                                      menu_items__availability=True)
-            restaurants = [product.restaurants for product in order_products]
+            restaurants = [product_restaurants[product] for product in order_products]
             order.restaurants = set(restaurants[0]).intersection(*restaurants[1:])
+
+        return self
+
+    def calculate_distance_orders(self):
+        for order in self:
+            for restaurant in order.restaurants:
+                try:
+                    restaurant.distance = calculate_distance(order.address, restaurant.address)
+                except requests.RequestException:
+                    restaurant.distance = 'Ошибка определения координат'
+            order.restaurants = sorted(order.restaurants, key=lambda rest: rest.distance)
         return self
 
 

@@ -93,5 +93,6 @@ def view_restaurants(request):
 def view_orders(request):
     orders = Order.objects.prefetch_related('order_items__product').\
         calculate_order_amount().\
-        can_cook_restaurants()
+        can_cook_restaurants().\
+        calculate_distance_orders()
     return render(request, template_name='order_items.html', context={'order_items': orders})
