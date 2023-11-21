@@ -27,7 +27,7 @@
 
     {% for item in order_items %}
       <tr>
-        {% if not item.status == 'CO' %}
+        {% if not item.status == 'CO' and item.restaurants %}
           <td>{{ item.id }}</td>
           <td>{{ item.get_status_display }}</td>
           <td>{{ item.get_payment_method_display }}</td>

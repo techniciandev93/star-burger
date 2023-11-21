@@ -7,7 +7,7 @@ from django.db.models import Sum, F
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
-from restaurateur.service import calculate_distance
+from restaurateur.service import calculate_distance, FetchCoordinatesError
 
 
 class OrderQuerySet(models.QuerySet):
@@ -39,7 +39,7 @@ class OrderQuerySet(models.QuerySet):
             for restaurant in order.restaurants:
                 try:
                     restaurant.distance = calculate_distance(order.address, restaurant.address)
-                except requests.RequestException:
+                except (requests.RequestException, FetchCoordinatesError):
                     restaurant.distance = 'Ошибка определения координат'
             order.restaurants = sorted(order.restaurants, key=lambda rest: rest.distance)
         return self
