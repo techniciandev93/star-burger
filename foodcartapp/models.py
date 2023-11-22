@@ -1,12 +1,12 @@
 from collections import defaultdict
 
-import requests
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.db.models import Sum, F
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
+#from places.service import get_existing_places
 from restaurateur.service import calculate_distance, FetchCoordinatesError
 
 
@@ -35,13 +35,14 @@ class OrderQuerySet(models.QuerySet):
         return self
 
     def calculate_distance_orders(self):
+        places = get_existing_places(self)
         for order in self:
             for restaurant in order.restaurants:
                 try:
-                    restaurant.distance = calculate_distance(order.address, restaurant.address)
-                except (requests.RequestException, FetchCoordinatesError):
+                    restaurant.distance = calculate_distance(places[order.address], places[restaurant.address])
+                except FetchCoordinatesError:
                     restaurant.distance = 'Ошибка определения координат'
-            order.restaurants = sorted(order.restaurants, key=lambda rest: rest.distance)
+            order.restaurants = sorted(order.restaurants, key=lambda restaurant_key: restaurant_key.distance)
         return self
 
 

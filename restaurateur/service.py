@@ -1,8 +1,6 @@
 import requests
 from geopy import distance
 
-from star_burger.settings import YANDEX_GEOCODER_TOKEN
-
 
 class FetchCoordinatesError(TypeError):
     pass
@@ -26,10 +24,7 @@ def fetch_coordinates(apikey, address):
     return lon, lat
 
 
-def calculate_distance(first_address, second_address, apikey=YANDEX_GEOCODER_TOKEN):
-    first_fetch_coordinates = fetch_coordinates(apikey, first_address)
-    second_fetch_coordinates = fetch_coordinates(apikey, second_address)
-    if not any([first_fetch_coordinates, second_fetch_coordinates]):
+def calculate_distance(first_coordinate, second_coordinate):
+    if any(x is None for x in [*first_coordinate, *second_coordinate]):
         raise FetchCoordinatesError('Одна из координат или обе координаты не определенны')
-    return distance.distance(fetch_coordinates(apikey, first_address),
-                             fetch_coordinates(apikey, second_address)).km
+    return distance.distance(first_coordinate, second_coordinate).km
