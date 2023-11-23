@@ -91,7 +91,7 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    orders = Order.objects.prefetch_related('order_items__product').\
+    orders = Order.objects.prefetch_related('order_items__product', 'restaurant').\
         calculate_order_amount().\
         can_cook_restaurants().\
         calculate_distance_orders()
