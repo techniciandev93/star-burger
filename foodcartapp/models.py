@@ -6,7 +6,7 @@ from django.db.models import Sum, F
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
-#from places.service import get_existing_places
+from places.service import check_errors_geocoding_places
 from restaurateur.service import calculate_distance, FetchCoordinatesError
 
 
@@ -35,10 +35,12 @@ class OrderQuerySet(models.QuerySet):
         return self
 
     def calculate_distance_orders(self):
-        places = get_existing_places(self)
+        places = check_errors_geocoding_places(self)
         for order in self:
             for restaurant in order.restaurants:
                 try:
+                    print(order.firstname, order.address, places[order.address],
+                          '|', restaurant.address, places[restaurant.address], calculate_distance(places[order.address], places[restaurant.address]))
                     restaurant.distance = calculate_distance(places[order.address], places[restaurant.address])
                 except FetchCoordinatesError:
                     restaurant.distance = 'Ошибка определения координат'

@@ -27,4 +27,4 @@ def fetch_coordinates(apikey, address):
 def calculate_distance(first_coordinate, second_coordinate):
     if any(x is None for x in [*first_coordinate, *second_coordinate]):
         raise FetchCoordinatesError('Одна из координат или обе координаты не определенны')
-    return distance.distance(first_coordinate, second_coordinate).km
+    return distance.distance(first_coordinate, second_coordinate).kilometers

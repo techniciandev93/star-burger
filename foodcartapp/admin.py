@@ -5,6 +5,7 @@ from django.utils.encoding import iri_to_uri
 from django.utils.html import format_html
 from django.utils.http import url_has_allowed_host_and_scheme
 
+from places.service import update_or_create_place
 from star_burger.settings import ALLOWED_HOSTS
 from .models import Product, Order, OrderItem
 from .models import ProductCategory
@@ -32,6 +33,10 @@ class RestaurantAdmin(admin.ModelAdmin):
     inlines = [
         RestaurantMenuItemInline
     ]
+
+    def save_model(self, request, obj, form, change):
+        update_or_create_place(obj)
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(Product)
@@ -134,6 +139,7 @@ class OrderAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if obj.restaurant:
             obj.status = 'RE'
+        update_or_create_place(obj)
         super().save_model(request, obj, form, change)
 
     def response_post_save_change(self, request, obj):
