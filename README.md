@@ -149,6 +149,12 @@ Parcel будет следить за файлами в каталоге `bundle
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
 - `YANDEX_GEOCODER_TOKEN` - токен яндекс-геокодера. Получить его можно в [кабинете разработчика Яндекса](https://developer.tech.yandex.ru/services/)
 
+## Примечание
+Для создания тестовых данных используйте скрипт test.py в корне проекта.
+```
+python test.py
+```
+
 ## Цели проекта
 
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).
