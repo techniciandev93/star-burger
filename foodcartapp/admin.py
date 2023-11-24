@@ -36,6 +36,7 @@ class RestaurantAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    raw_id_fields = ('category',)
     list_display = [
         'get_image_list_preview',
         'name',
@@ -123,6 +124,7 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [
         OrderItemInline,
     ]
+    raw_id_fields = ('restaurant',)
 
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)

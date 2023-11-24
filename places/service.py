@@ -26,7 +26,7 @@ def update_places(need_update_places):
     for place in need_update_places:
         lng, lat, geocoding_failed = get_coordinates_from_address(place.address)
 
-        places.append(Place(id=place.id, lng=lng, lat=lat, date=timezone.now(), geocoding_failed=geocoding_failed))
+        places.append(Place(id=place.id, lng=lng, lat=lat, date=timezone.localtime(), geocoding_failed=geocoding_failed))
     Place.objects.bulk_update(places, ['lng', 'lat', 'date', 'geocoding_failed'], batch_size=1000)
     return places
 
@@ -39,12 +39,12 @@ def update_or_create_place(obj):
             'lng': lng,
             'lat': lat,
             'geocoding_failed': geocoding_failed,
-            'date': timezone.now()
+            'date': timezone.localtime()
         })
     if not created:
         place.lng = lng
         place.lat = lat
-        place.date = timezone.now()
+        place.date = timezone.localtime()
         place.geocoding_failed = geocoding_failed
         place.save()
 

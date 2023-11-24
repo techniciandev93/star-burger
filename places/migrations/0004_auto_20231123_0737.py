@@ -25,7 +25,7 @@ def create_place(place_model, address):
             'geocoding_failed': geocoding_failed,
             'lng': lng,
             'lat': lat,
-            'date': timezone.now()
+            'date': timezone.localtime()
         }
     )
 
