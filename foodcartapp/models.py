@@ -3,10 +3,12 @@ from collections import defaultdict
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.db.models import Sum, F
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
-from places.service import check_errors_geocoding_places
+from places.service import check_errors_geocoding_places, update_or_create_place
 from restaurateur.service import calculate_distance, FetchCoordinatesError
 
 
@@ -221,3 +223,9 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.product.name} {self.order.firstname} {self.order.lastname} {self.order.address}"
+
+
+@receiver(post_save, sender=Restaurant)
+@receiver(post_save, sender=Order)
+def update_place_coordinates(sender, instance, **kwargs):
+    update_or_create_place(instance)

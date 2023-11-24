@@ -5,7 +5,6 @@ from django.utils.encoding import iri_to_uri
 from django.utils.html import format_html
 from django.utils.http import url_has_allowed_host_and_scheme
 
-from places.service import update_or_create_place
 from star_burger.settings import ALLOWED_HOSTS
 from .models import Product, Order, OrderItem
 from .models import ProductCategory
@@ -33,10 +32,6 @@ class RestaurantAdmin(admin.ModelAdmin):
     inlines = [
         RestaurantMenuItemInline
     ]
-
-    def save_model(self, request, obj, form, change):
-        update_or_create_place(obj)
-        super().save_model(request, obj, form, change)
 
 
 @admin.register(Product)
@@ -105,7 +100,8 @@ class ProductAdmin(admin.ModelAdmin):
         if not obj.image or not obj.id:
             return 'нет картинки'
         edit_url = reverse('admin:foodcartapp_product_change', args=(obj.id,))
-        return format_html('<a href="{edit_url}"><img src="{src}" style="max-height: 50px;"/></a>', edit_url=edit_url, src=obj.image.url)
+        return format_html('<a href="{edit_url}"><img src="{src}" style="max-height: 50px;"/></a>',
+                           edit_url=edit_url, src=obj.image.url)
     get_image_list_preview.short_description = 'превью'
 
 
@@ -139,7 +135,6 @@ class OrderAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if obj.restaurant:
             obj.status = 'RE'
-        update_or_create_place(obj)
         super().save_model(request, obj, form, change)
 
     def response_post_save_change(self, request, obj):
