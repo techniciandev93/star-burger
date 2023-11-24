@@ -37,14 +37,15 @@ class OrderQuerySet(models.QuerySet):
     def calculate_distance_orders(self):
         places = check_errors_geocoding_places(self)
         for order in self:
+            order.distances = {}
             for restaurant in order.restaurants:
                 try:
-                    print(order.firstname, order.address, places[order.address],
-                          '|', restaurant.address, places[restaurant.address], calculate_distance(places[order.address], places[restaurant.address]))
-                    restaurant.distance = calculate_distance(places[order.address], places[restaurant.address])
+                    distance = calculate_distance(places[order.address], places[restaurant.address])
+                    order.distances[restaurant.address] = distance
                 except FetchCoordinatesError:
-                    restaurant.distance = 'Ошибка определения координат'
-            order.restaurants = sorted(order.restaurants, key=lambda restaurant_key: restaurant_key.distance)
+                    order.distances[restaurant.address] = 'Ошибка определения координат'
+            order.restaurants = sorted(order.restaurants,
+                                       key=lambda restaurant_key: order.distances[restaurant_key.address])
         return self
 
 

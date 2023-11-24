@@ -43,8 +43,8 @@
               <details>
                 <summary>Может быть приготовлен ресторанами: </summary>
                 <ul>
-                  {% for restaurant in item.restaurants %}
-                    <li>{{ restaurant }} - {{ restaurant.distance }} КМ</li>
+                  {% for restaurant, distance in item.distances.items %}
+                    <li>{{ restaurant }} - {{ distance }} КМ</li>
                   {% endfor %}
                 </ul>
               </details>
