@@ -181,6 +181,7 @@ class Order(models.Model):
         ('CO', 'Завершён')
     )
     PAYMENT = (
+        ('NS', 'Не указано'),
         ('CA', 'Наличными'),
         ('EL', 'Электронно')
     )
@@ -189,9 +190,9 @@ class Order(models.Model):
     phonenumber = PhoneNumberField(verbose_name='Мобильный номер')
     address = models.CharField(verbose_name='Адрес', max_length=200)
     status = models.CharField(verbose_name='Статус', max_length=2, choices=ORDER_STATUSES, default='UN', db_index=True)
-    payment_method = models.CharField(verbose_name='Способ оплаты', max_length=2, choices=PAYMENT, default='EL',
+    payment_method = models.CharField(verbose_name='Способ оплаты', max_length=2, choices=PAYMENT, default='NS',
                                       db_index=True)
-    comment = models.TextField(verbose_name='Комментарий', blank=True, default='')
+    comment = models.TextField(verbose_name='Комментарий', blank=True)
     registration_date = models.DateTimeField(verbose_name='Дата создания заказа', default=timezone.now, db_index=True)
     call_date = models.DateTimeField(verbose_name='Дата звонка', blank=True, null=True, db_index=True)
     delivery_date = models.DateTimeField(verbose_name='Дата доставки', blank=True, null=True, db_index=True)
@@ -211,8 +212,7 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE,  verbose_name='Товар', related_name='order_items')
     order = models.ForeignKey(Order, on_delete=models.CASCADE,  verbose_name='Заказ', related_name='order_items')
     quantity = models.IntegerField(verbose_name='Количество', validators=[MinValueValidator(1)])
-    price = models.DecimalField(verbose_name='Цена', max_digits=8, decimal_places=2, validators=[MinValueValidator(0)],
-                                default=0)
+    price = models.DecimalField(verbose_name='Цена', max_digits=8, decimal_places=2, validators=[MinValueValidator(0)])
 
     class Meta:
         verbose_name = 'Элемент заказа'
