@@ -30,10 +30,12 @@ class OrderQuerySet(models.QuerySet):
 
         for order in self:
             order_items = order.order_items.all()
-            order_products = [item.product for item in order_items]
-            restaurants = [product_restaurants[product] for product in order_products]
-            order.restaurants = set(restaurants[0]).intersection(*restaurants[1:])
-
+            if order_items:
+                order_products = [item.product for item in order_items]
+                restaurants = [product_restaurants[product] for product in order_products]
+                order.restaurants = set(restaurants[0]).intersection(*restaurants[1:])
+            else:
+                order.restaurants = set()
         return self
 
     def calculate_distance_orders(self):
