@@ -53,13 +53,26 @@ python -m venv venv
 ```sh
 pip install -r requirements.txt
 ```
+Создайте базу данных [PostgreSQL](https://www.postgresql.org/)
 
-Определите переменную окружения `SECRET_KEY`. Создать файл `.env` в каталоге `star_burger/` и положите туда такой код:
+Определите переменные окружения. Создать файл .env в каталоге star_burger/ и запишите переменные окружения:
+
+```sh
+YANDEX_GEOCODER_API_KEY - токен яндекс-геокодера.
+```
+Получить его можно в [кабинете разработчика Яндекса](https://developer.tech.yandex.ru/services/)
+
+Определите переменную окружения `SECRET_KEY`.
 ```sh
 SECRET_KEY=django-insecure-0if40nf4nf93n4
 ```
 
-Создайте файл базы данных SQLite и отмигрируйте её следующей командой:
+Данные для базы данных PostgreSQL в формате postgres://USER:PASSWORD@HOST:PORT/NAME
+```sh
+DATABASE_URL=postgres://postgres:admin@localhost:5432/star_burger
+```
+
+Создайте миграции следующей командой:
 
 ```sh
 python manage.py migrate
@@ -150,6 +163,8 @@ Parcel будет следить за файлами в каталоге `bundle
 - `YANDEX_GEOCODER_TOKEN` - токен яндекс-геокодера. Получить его можно в [кабинете разработчика Яндекса](https://developer.tech.yandex.ru/services/)
 - `ROLLBAR_ACCESS_TOKEN` - Токен для  [Rollbar](https://rollbar.com/), опционально
 - `ROLLBAR_ENVIRONMENT` - опционально, наименование инсталляции для разделения источника в системе Rollbar, например 'development', 'production'.
+- `DATABASE_URL=postgres://postgres:admin@localhost:5432/star_burger` - Данные для базы данных PostgreSQL в формате postgres://USER:PASSWORD@HOST:PORT/NAME
+
 ## Примечание
 Для создания тестовых данных используйте скрипт test.py в корне проекта.
 ```
