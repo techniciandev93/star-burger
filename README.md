@@ -165,6 +165,13 @@ Parcel будет следить за файлами в каталоге `bundle
 - `ROLLBAR_ENVIRONMENT` - опционально, наименование инсталляции для разделения источника в системе Rollbar, например 'development', 'production'.
 - `DATABASE_URL=postgres://postgres:admin@localhost:5432/star_burger` - Данные для базы данных PostgreSQL в формате postgres://USER:PASSWORD@HOST:PORT/NAME
 
+Запустить скрипт для обновления кода и перезапуска сервисов:
+```
+./deploy_star_burger.sh
+```
+Скрипт сообщит об успешном обновлении или возникших проблемах.
+
+
 ## Примечание
 Для создания тестовых данных используйте скрипт test.py в корне проекта.
 ```
