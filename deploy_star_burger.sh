@@ -33,4 +33,15 @@ echo "Перезапуск nginx"
 sudo systemctl reload nginx.service
 echo  "Nginx перезапущен"
 
+echo "Регистрация deploy в сервисе Rollbar"
+commit_hash=$(git rev-parse HEAD)
+source .env
+export ROLLBAR_TOKEN
+
+curl --http1.1 -X POST \
+  https://api.rollbar.com/api/1/deploy \
+  -H "X-Rollbar-Access-Token: $ROLLBAR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"environment": "production", "revision": "'"$commit_hash"'", "local_username": "'"$USER"'", "comment": "Deployed new version", "status": "succeeded"}'
+
 echo "Деплой завершен"
